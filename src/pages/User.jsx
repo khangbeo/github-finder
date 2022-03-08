@@ -4,15 +4,20 @@ import { useParams, Link } from "react-router-dom";
 import Spinner from "../components/layout/Spinner";
 import GithubContext from "../context/github/GithubContext";
 import RepoList from "../components/repos/RepoList";
+import { getUserAndRepos } from "../context/github/GithubActions";
 
 function User() {
-  const { getUser, user, loading, getUserRepos, repos } = useContext(GithubContext);
+  const { user, loading, repos, dispatch } = useContext(GithubContext);
   const params = useParams();
 
   useEffect(() => {
-    getUser(params.login);
-    getUserRepos(params.login)
-  }, []);
+    dispatch({ type: "SET_LOADING" });
+    const getUserData = async () => {
+      const userData = await getUserAndRepos(params.login);
+      dispatch({ type: "GET_USER_AND_REPOS", payload: userData });
+    };
+    getUserData();
+  }, [dispatch, params.login]);
 
   const {
     name,
@@ -60,7 +65,9 @@ function User() {
               <h1 className="text-3xl card-title">
                 {name}
                 <div className="ml-2 mr-1 badge badge-success">{type}</div>
-                {hireable && <div className="mx-1 badge-info">Hireable</div>}
+                {hireable && (
+                  <div className="mx-1 badge badge-info">Hireable</div>
+                )}
               </h1>
               <p>{bio}</p>
 
